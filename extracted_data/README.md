@@ -1,5 +1,6 @@
 # ckp_data.txt
 There are three columns in ckp_data.txt
+
     - Doc_ID: 1st column
         - int in string format
     - Sent_ID: 2nd column
@@ -11,6 +12,7 @@ There are three columns in ckp_data.txt
 
 # doc2file.txt
 There are three columns in doc2file.txt
+
     - Doc_ID: 1st column
         - int in string format
     - File_Name: 2nd column
