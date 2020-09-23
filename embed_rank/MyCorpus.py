@@ -14,8 +14,7 @@ class MyCorpus:
         self.corpus_path = corpus_path
 
     def __iter__(self):
-        doc2file_gen = self.docID_to_filename()
         for doc in open(self.corpus_path):
             # get next document
-            doc_ID, doc_tokens = doc.replace("\n", "").split(",")
+            doc_ID, doc_tokens = doc.replace("\n", "").rsplit(",", 1)
             yield TaggedDocument(doc_tokens.split(" "), [doc_ID])
