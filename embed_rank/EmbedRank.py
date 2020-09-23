@@ -31,6 +31,8 @@ stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves',
 
 class EmbedRank:
     '''
+    This class implements parts to run EmbedRank algorithm
+
     Attributes:
     ---------------
     sent_tokenizer: nltk sentence tokenizer
