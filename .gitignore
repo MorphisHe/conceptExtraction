@@ -4,3 +4,4 @@ test_doc.pdf
 __pycache__/
 main.py
 .vscode/
+env/
