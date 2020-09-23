@@ -3,3 +3,4 @@ test_doc.pdf
 .DS_Store
 __pycache__/
 main.py
+.vscode/
