@@ -1,5 +1,5 @@
 '''
-This file downloads 
+This file downloads nltk data if not found. Also sets the enviornment for Tika server.
 '''
 import nltk
 import os
