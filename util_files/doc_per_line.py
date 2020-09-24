@@ -1,8 +1,13 @@
 '''
 This file converts a data file to 1 document per line format
+
+Run Guild: 
+    - run in same dir as this file
+    - python3 doc_per_line.py [test|train] [corpus_path] [doc2file_path] [output_path]
 '''
 from smart_open import open
 import time
+import sys
 
 def docID_to_filename(doc2file_path):
     # get next document's file_name
@@ -60,9 +65,10 @@ def convert(corpus_path, doc2file_path, output_path):
 
 
 # running the script
-CORPUS_PATH = "../extracted_data/ckp_data.txt"
-DOC2FILE_PATH = "../extracted_data/doc2file.txt"
-OUTPUT_PATH = "../extracted_data/train_corpus.txt"
+test_or_train, ckp_path, doc2file_path, output_path = sys.argv[1:]
+CORPUS_PATH = f"../extracted_data/{test_or_train}/{ckp_path}"
+DOC2FILE_PATH = f"../extracted_data/{test_or_train}/{doc2file_path}"
+OUTPUT_PATH = f"../extracted_data/{test_or_train}/{output_path}"
 
 if convert(CORPUS_PATH, DOC2FILE_PATH, OUTPUT_PATH):
     s = time.time()
