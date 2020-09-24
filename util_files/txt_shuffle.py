@@ -1,7 +1,9 @@
 '''
 This file shuffles a txt file by line
 
-Run Guild: python3 txt_shuffle.py [file_path_to_shuffle]
+Run Guild: 
+    - run in same dir as this file
+    - python3 txt_shuffle.py [file_path_to_shuffle]
 '''
 import sys
 import random
