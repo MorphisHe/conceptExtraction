@@ -5,3 +5,5 @@ __pycache__/
 main.py
 .vscode/
 env/
+model_checkpoint/
+evaluate.py

@@ -60,9 +60,9 @@ def convert(corpus_path, doc2file_path, output_path):
 
 
 # running the script
-CORPUS_PATH = "extracted_data/ckp_data.txt"
-DOC2FILE_PATH = "extracted_data/doc2file.txt"
-OUTPUT_PATH = "extracted_data/train_corpus.txt"
+CORPUS_PATH = "../extracted_data/ckp_data.txt"
+DOC2FILE_PATH = "../extracted_data/doc2file.txt"
+OUTPUT_PATH = "../extracted_data/train_corpus.txt"
 
 if convert(CORPUS_PATH, DOC2FILE_PATH, OUTPUT_PATH):
     s = time.time()
