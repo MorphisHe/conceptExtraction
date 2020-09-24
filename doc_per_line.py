@@ -1,3 +1,6 @@
+'''
+This file converts a data file to 1 document per line format
+'''
 from smart_open import open
 import time
 
