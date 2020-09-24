@@ -1,4 +1,5 @@
 **.txt
+!requirements.txt
 test_doc.pdf
 .DS_Store
 __pycache__/
