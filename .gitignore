@@ -7,4 +7,5 @@ main.py
 .vscode/
 env/
 model_checkpoint/
-evaluate.py
+model_results/
+crap.py
