@@ -2,17 +2,6 @@
 Run Guild:
     - run in same dir as this file
     - python3 train.py [train_corpus_path] [test_corpus_path]
-
-ranks = []
-for tagged_doc in train_corpus:
-    words, doc_id = enumerate(tagged_doc)
-    doc_id = doc_id[-1][0] # remove tuple and list
-    words = words[-1] # remove tuple
-
-    inferred_vector = model.infer_vector(words)
-    sims = model.docvecs.most_similar([inferred_vector], topn=len(model.docvecs))
-    rank = [docid for docid, sim in sims].index(doc_id)
-    ranks.append(rank)
 '''
 
 from gensim.models.doc2vec import Doc2Vec
