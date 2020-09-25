@@ -69,6 +69,7 @@ num_cores = cpu_count()
 
 s = time.time()
 model = None
+best_model = None
 best_para_dict = {}
 tunning_log = []
 best_accuracy = 0
@@ -98,6 +99,7 @@ for cur_epochs in parameters["epochs"]:
                     best_accuracy = accuracy
                     best_para_dict = {"vector_size":cur_vec_size, "window":cur_window, 
                                       "epochs":cur_epochs, "min_count":cur_mc}
+                    best_model = model
                 print("===============================================\n")
 
 
@@ -106,7 +108,7 @@ pprint.pprint(tunning_log)
 print("\n")
 pprint.pprint(best_para_dict)
 # save the results
-model.save("model_results/final_D2V.model")
+best_model.save("model_results/final_D2V.model")
 with open("model_results/tunning_log.pickle", "wb") as fd:
     pickle.dump(tunning_log, fd, protocol=pickle.HIGHEST_PROTOCOL)
 with open("model_results/best_para_dict.pickle", "wb") as fd:
