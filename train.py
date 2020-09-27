@@ -63,44 +63,46 @@ test_corpus = list(MyCorpus(TEST_CORPUS_PATH)) # each doc is a TaggedDocument ob
 
 
 # search for the best hyperparameters
-parameters = {'vector_size':[20, 50, 100, 200], 'min_count':[3, 5, 7, 10],
-              'epochs':[10, 20, 30], 'window':[2, 5, 10]}
+parameters = {'vector_size':[20, 50, 100, 150, 200, 250, 300], 'min_count':[3, 5, 7, 8, 9, 10],
+              'epochs':[10, 20, 30, 40], 'window':[2, 3, 4, 5, 10], 'negative':[5, 7, 9, 11]}
 num_cores = cpu_count()
 
 s = time.time()
 model = None
 best_model = None
-best_para_dict = {}
 tunning_log = []
+best_para_dict = {}
 best_accuracy = 0
 for cur_epochs in parameters["epochs"]:
     for cur_vec_size in parameters["vector_size"]:
-        for cur_window in parameters["window"]:
-            for cur_mc in parameters["min_count"]:
-                # starting training model
-                model = Doc2Vec(vector_size=cur_vec_size, window=cur_window, min_count=cur_mc, seed=1,
-                                dm=1, workers=num_cores, hs=0, negative=5, dm_mean=1)
-                model.build_vocab(train_corpus)
-                print("\n===============================================")
-                print("Starting Training model with new parameter:")
-                print("     - Epoch:", cur_epochs)
-                print("     - Vec_Size:", cur_vec_size)
-                print("     - Window:", cur_window)
-                print("     - Min_Count:", cur_mc, "\n\n")
-                model.train(train_corpus, total_examples=model.corpus_count, epochs=cur_epochs)
-                accuracy = evaluate_triplet(model, test_corpus)
-                print("\n**************************")
-                print(f"Accuracy: {accuracy}%")
-                print("**************************\n")
-                tunning_log.append((str(model),f"Epoch: {cur_epochs}",f"Accuracy:{accuracy}"))
-                
-                if accuracy > best_accuracy:
-                    print("\n\nModel Updated!!!!!!!!!")
-                    best_accuracy = accuracy
-                    best_para_dict = {"vector_size":cur_vec_size, "window":cur_window, 
-                                      "epochs":cur_epochs, "min_count":cur_mc}
-                    best_model = model
-                print("===============================================\n")
+        for cur_negative in parameters["negative"]:
+            for cur_window in parameters["window"]:
+                for cur_mc in parameters["min_count"]:
+                    # starting training model
+                    model = Doc2Vec(vector_size=cur_vec_size, window=cur_window, min_count=cur_mc, seed=1,
+                                    dm=1, workers=num_cores, hs=0, negative=cur_negative, dm_mean=1)
+                    model.build_vocab(train_corpus)
+                    print("\n===============================================")
+                    print("Starting Training model with new parameter:")
+                    print("     - Epoch:", cur_epochs)
+                    print("     - Vec_Size:", cur_vec_size)
+                    print("     - Window:", cur_window)
+                    print("     - Negative:", cur_negative)
+                    print("     - Min_Count:", cur_mc, "\n\n")
+                    model.train(train_corpus, total_examples=model.corpus_count, epochs=cur_epochs)
+                    accuracy = evaluate_triplet(model, test_corpus)
+                    print("\n**************************")
+                    print(f"Accuracy: {accuracy}%")
+                    print("**************************\n")
+                    tunning_log.append((str(model),f"Epoch: {cur_epochs}",f"Accuracy:{accuracy}"))
+                    
+                    if accuracy > best_accuracy:
+                        print("\n\nModel Updated!!!!!!!!!")
+                        best_accuracy = accuracy
+                        best_para_dict = {"vector_size":cur_vec_size, "window":cur_window, 
+                                        "epochs":cur_epochs, "min_count":cur_mc, 'negative':cur_negative}
+                        best_model = model
+                    print("===============================================\n")
 
 
 print("\n\n\n")
@@ -108,7 +110,7 @@ pprint.pprint(tunning_log)
 print("\n")
 pprint.pprint(best_para_dict)
 # save the results
-best_model.save("model_results/final_D2V.model")
+best_model.save("model_results/D2V.model")
 with open("model_results/tunning_log.pickle", "wb") as fd:
     pickle.dump(tunning_log, fd, protocol=pickle.HIGHEST_PROTOCOL)
 with open("model_results/best_para_dict.pickle", "wb") as fd:
