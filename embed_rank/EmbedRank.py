@@ -273,10 +273,23 @@ class EmbedRank:
         return doc_embed, ckps_embed
 
     
-    def mmr(self, doc_vec, ckp_vecs, beta=0.55, top_n=10, alias_threashold=0.8):
-        # TODO: remove alias_threshold
-        # TODO: wirte documentation
-        # TODO: think of input parameters. ex: ckp_vecs comes in list of TaggedDocument?
+    def mmr(self, doc_embed, ckps_embed, beta=0.55, top_n=10):
+        '''
+        This method applied mmr to pick the top_n ckp with controlled similarity between ckps
+
+        Parameter:
+        ---------------
+        doc_embed: a tup (doc_tag, doc_embed)
+
+        ckps_embed: a dict with key=ckp string and value=embeded ckp vector
+        
+        Return:
+        ---------------
+        selected_ckp_strings: 1d np array containing ckp string of the selected ckps
+        '''
+        # get the vector of doc and ckps
+        doc_vec = doc_embed[1]
+        ckp_vecs = list(ckps_embed.values())
 
         # 2d list, inner dimension contains only 1 value representing cos sim between doc and ckp
         doc_ckp_sims = cosine_similarity(ckp_vecs, [doc_vec])
@@ -317,4 +330,7 @@ class EmbedRank:
             selected_ckp.append(true_ckp_index)
             unselected_ckp.remove(true_ckp_index)
         
-        return selected_ckp
+        # return the ckp string of selected ckps
+        ckp_strings = np.array(list(ckps_embed.keys()))
+        selected_ckp_strings = ckp_strings[selected_ckp]
+        return selected_ckp_strings
