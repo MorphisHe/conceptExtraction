@@ -6,7 +6,7 @@ import re
 import contractions
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from gensim.models.doc2vec import Doc2Vec, TaggedDocument
+from gensim.models.doc2vec import Doc2Vec
 
 stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 
             'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 
@@ -263,12 +263,10 @@ class EmbedRank:
         for sent_token in ckps_list:
             for ckp_token in sent_token:
                 new_ckps_list.append(ckp_token.split())
-                tagged_ckp = TaggedDocument(ckp_token.split(), [ckp_token])
-                ckps_embed[ckp_token] = self.model.infer_vector(tagged_ckp)
+                ckps_embed[ckp_token] = self.model.infer_vector(ckp_token.split())
 
         # embed document
-        tagged_doc = TaggedDocument(new_ckps_list, [doc_tag])
-        doc_embed = (doc_tag, self.model.infer_vector(tagged_doc))
+        doc_embed = (doc_tag, self.model.infer_vector(new_ckps_list))
 
         return doc_embed, ckps_embed
 
