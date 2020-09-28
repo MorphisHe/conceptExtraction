@@ -6,6 +6,7 @@ import re
 import contractions
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
+from gensim.models.doc2vec import Doc2Vec
 
 stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 
             'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 
@@ -51,7 +52,7 @@ class EmbedRank:
 
     parser: tika parser to extract text from files
     '''
-    def __init__(self):
+    def __init__(self, model_path):
         self.sent_tokenizer = nltk.tokenize.sent_tokenize
         self.punct_tokenizer = nltk.RegexpTokenizer(r"[^\W_]+|[^\W_\s]+")
         self.stop_words = stopwords
@@ -59,6 +60,7 @@ class EmbedRank:
         self.chucker = nltk.RegexpParser("""NP:{<JJ>*<NN.*>{0,3}}  # Adjectives (0) plus Nouns (1-3)""")
         self.lemmatizer = nltk.stem.WordNetLemmatizer()
         self.parser = parser
+        self.model = Doc2Vec.load(model_path)
 
     def extract_information(self, pdf_path):
         '''
