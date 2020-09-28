@@ -4,6 +4,8 @@ import unidecode
 from collections import defaultdict
 import re
 import contractions
+from sklearn.metrics.pairwise import cosine_similarity
+import numpy as np
 
 stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 
             'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 
@@ -47,8 +49,6 @@ class EmbedRank:
 
     lemmatizer: nltk tool to lemmatize word tokens using POS tag
 
-    freq_dict: a dictionary to keep the frequency of each word in corpus
-
     parser: tika parser to extract text from files
     '''
     def __init__(self):
@@ -58,7 +58,6 @@ class EmbedRank:
         self.pos_tagger = nltk.pos_tag
         self.chucker = nltk.RegexpParser("""NP:{<JJ>*<NN.*>{0,3}}  # Adjectives (0) plus Nouns (1-3)""")
         self.lemmatizer = nltk.stem.WordNetLemmatizer()
-        self.freq_dict = defaultdict(int)
         self.parser = parser
 
     def extract_information(self, pdf_path):
@@ -88,10 +87,7 @@ class EmbedRank:
                 #text = pdf_parser['content']
         except Exception as e:
             print(pdf_path, "\n\n")
-        
         return text
-        #return re.sub(r'\w+:\/{2}[\d\w-]+(\.[\d\w-]+)*(?:(?:\/[^\s/]*))*',
-        #             '', unidecode.unidecode(text))
 
     def tokenize(self, text):
         '''
@@ -144,6 +140,7 @@ class EmbedRank:
         ---------------
         lst_word_tokens: 2d list where first dimension holds sentence level tokens
                          then each sentence token holds it's word tokens
+        
         Return:
         ---------------
         lst_word_tokens: 2d list with first dimension representing the sentence of text corpus
@@ -189,6 +186,7 @@ class EmbedRank:
         ---------------
         lst_word_tokens: 2d list where first dimension holds sentence level tokens
                          then each sentence token holds it's word tokens and POS_tag
+        
         Return:
         ---------------
         lst_word_tokens: 2d list with first dimension representing the sentence of text corpus
@@ -239,3 +237,49 @@ class EmbedRank:
         lst_word_tokens = [sent_token for sent_token in lst_word_tokens if len(sent_token)]
 
         return lst_word_tokens
+    
+    def mmr(self, doc_vec, ckp_vecs, beta=0.55, top_n=10, alias_threashold=0.8):
+        # TODO: remove alias_threshold
+        # TODO: wirte documentation
+        # TODO: think of input parameters. ex: ckp_vecs comes in list of TaggedDocument?
+
+        # 2d list, inner dimension contains only 1 value representing cos sim between doc and ckp
+        doc_ckp_sims = cosine_similarity(ckp_vecs, [doc_vec])
+        # 2d list that calculates ckp's cos sim with all other ckps
+        ckp2ckp_sims = cosine_similarity(ckp_vecs)
+        np.fill_diagonal(ckp2ckp_sims, np.NaN)
+
+        # normalize cos sims to [0, 1]
+        doc_ckp_sims_norm = doc_ckp_sims / np.max(doc_ckp_sims)
+        ckp2ckp_sims_norm = ckp2ckp_sims / np.nanmax(ckp2ckp_sims, axis=0)
+        # standardize and shift by 0.5
+        doc_ckp_sims_norm = 0.5 + (doc_ckp_sims_norm - np.mean(doc_ckp_sims_norm)) / np.std(doc_ckp_sims_norm)
+        ckp2ckp_sims_norm = 0.5 + (ckp2ckp_sims_norm - np.nanmean(ckp2ckp_sims_norm, axis=0)) / np.nanstd(ckp2ckp_sims_norm, axis=0)
+
+        # keep indices of selected and unselected ckp in list
+        selected_ckp = []
+        unselected_ckp = [i for i in range(len(ckp_vecs))]
+
+        # find the most similar keyword (using original cosine similarities)
+        best_ckp_index = np.argmax(doc_ckp_sims)
+        selected_ckp.append(best_ckp_index)
+        unselected_ckp.remove(best_ckp_index)
+
+        # do top_n - 1 cycle to select top N keywords
+        while len(selected_ckp) != top_n:
+            dist_to_doc = doc_ckp_sims_norm[unselected_ckp, :] # dist from ckp to doc of the unselected ckps
+            # this is a 2d list that contains cos sim between selected ckp to unselected ckp
+            dist_between_ckp = ckp2ckp_sims_norm[unselected_ckp][:, selected_ckp]
+
+            # if dimension of dist_between_ckp is 1 we add additional axis to the end
+            if dist_between_ckp.ndim == 1: dist_between_ckp = dist_between_ckp[:, np.newaxis]
+
+            # find new ckp with mmr applied
+            best_ckp_index = np.argmax((beta * dist_to_doc) - ((1-beta) * np.max(dist_between_ckp, axis=1).reshape(-1, 1)))
+            true_ckp_index = unselected_ckp[best_ckp_index]
+
+            # add new ckp to list
+            selected_ckp.append(true_ckp_index)
+            unselected_ckp.remove(true_ckp_index)
+        
+        return selected_ckp
