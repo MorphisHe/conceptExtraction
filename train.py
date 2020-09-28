@@ -78,6 +78,20 @@ for cur_epochs in parameters["epochs"]:
         for cur_negative in parameters["negative"]:
             for cur_window in parameters["window"]:
                 for cur_mc in parameters["min_count"]:
+                    '''
+                    vector_size: size of embedding
+                    min_count: threshold for word freq to filter out. keep all >= min_count
+                    dm: 1 to use PV_DM model
+                    window: max distance between pred word and cur word
+                    workers: number of threads to use
+                    epochs: number of time to train over whol corpus
+                    hs: If 1, hierarchical softmax will be used for model training. If set to 0, 
+                        and negative is non-zero, negative sampling will be used
+                    negative: If > 0, negative sampling will be used, the int for negative specifies how many 
+                            “noise words” should be drawn (usually between 5-20). If set to 0, no negative 
+                            sampling is used
+                    dm_mean: if 1, averaging doc_vec and word_vec
+                    '''
                     # starting training model
                     model = Doc2Vec(vector_size=cur_vec_size, window=cur_window, min_count=cur_mc, seed=1,
                                     dm=1, workers=num_cores, hs=0, negative=cur_negative, dm_mean=1)
