@@ -6,7 +6,7 @@ import re
 import contractions
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
-from gensim.models.doc2vec import Doc2Vec
+from gensim.models.doc2vec import Doc2Vec, TaggedDocument
 
 stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 
             'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 
@@ -239,6 +239,39 @@ class EmbedRank:
         lst_word_tokens = [sent_token for sent_token in lst_word_tokens if len(sent_token)]
 
         return lst_word_tokens
+
+    def embed_doc_ckps(self, doc_tag, ckps_list):
+        '''
+        This method embeds doc and ckps to vectors
+
+        Parameter:
+        ---------------
+        doc_tag: document tag
+
+        ckps_list: 2d list -> [[ckp1, ckp2, ...], [ckp1, ...]]
+        
+        Return:
+        ---------------
+        doc_embed: a tup (doc_tag, doc_embed)
+
+        ckps_embed: a dict with key=ckp string and value=embeded ckp vector
+        '''
+        # convert ckps_list to list of word tokens in 1d
+        # at the same time embed each ckp
+        new_ckps_list = []
+        ckps_embed = {}
+        for sent_token in ckps_list:
+            for ckp_token in sent_token:
+                new_ckps_list.append(ckp_token.split())
+                tagged_ckp = TaggedDocument(ckp_token.split(), [ckp_token])
+                ckps_embed[ckp_token] = self.model.infer_vector(tagged_ckp)
+
+        # embed document
+        tagged_doc = TaggedDocument(new_ckps_list, [doc_tag])
+        doc_embed = (doc_tag, self.model.infer_vector(tagged_doc))
+
+        return doc_embed, ckps_embed
+
     
     def mmr(self, doc_vec, ckp_vecs, beta=0.55, top_n=10, alias_threashold=0.8):
         # TODO: remove alias_threshold
