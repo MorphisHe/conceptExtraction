@@ -1,11 +1,7 @@
 '''
-This file downloads nltk data if not found. Also sets the enviornment for Tika server.
+This file downloads nltk data if not found
 '''
 import nltk
-import os
-
-# set-up enviornment for off line tika server
-os.environ['TIKA_SERVER_JAR'] = os.getcwd() + "/embed_rank/tika_server/tika-server-1.24.1.jar"
 
 # check nltk data avaliability. Download if not avaliable 
 try:
