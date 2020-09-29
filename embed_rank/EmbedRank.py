@@ -298,7 +298,6 @@ class EmbedRank:
         # get the vector of doc and ckps
         doc_vec = doc_embed[1].reshape(1, -1)
         ckp_vecs = np.array(list(ckps_embed.values()))
-        print(doc_vec.shape, ckp_vecs.shape)
 
         # 2d list, inner dimension contains only 1 value representing cos sim between doc and ckp
         doc_ckp_sims = cosine_similarity(ckp_vecs, doc_vec)
