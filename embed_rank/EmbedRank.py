@@ -7,6 +7,12 @@ import contractions
 from sklearn.metrics.pairwise import cosine_similarity
 import numpy as np
 from gensim.models.doc2vec import Doc2Vec
+import logging
+import os
+logger = logging.Logger('catch_all')
+
+# set-up enviornment for off line tika server
+os.environ['TIKA_SERVER_JAR'] = os.getcwd() + "/embed_rank/tika_server/tika-server-1.24.1.jar"
 
 stopwords = ['i', 'me', 'my', 'myself', 'we', 'our', 'ours', 'ourselves', 
             'you', "you're", "you've", "you'll", "you'd", 'your', 'yours', 
@@ -88,7 +94,9 @@ class EmbedRank:
                 #                              headers=OCR_headers)
                 #text = pdf_parser['content']
         except Exception as e:
-            print(pdf_path, "\n\n")
+            print("\n\nFailing to extract text from :", pdf_path, "\n")
+            logger.error(e)
+            print("\n")
         return text
 
     def tokenize(self, text):
@@ -262,7 +270,8 @@ class EmbedRank:
         ckps_embed = {}
         for sent_token in ckps_list:
             for ckp_token in sent_token:
-                new_ckps_list.append(ckp_token.split())
+                for word_token in ckp_token.split():
+                    new_ckps_list.append(word_token)
                 ckps_embed[ckp_token] = self.model.infer_vector(ckp_token.split())
 
         # embed document
@@ -286,11 +295,12 @@ class EmbedRank:
         selected_ckp_strings: 1d np array containing ckp string of the selected ckps
         '''
         # get the vector of doc and ckps
-        doc_vec = doc_embed[1]
-        ckp_vecs = list(ckps_embed.values())
+        doc_vec = doc_embed[1].reshape(1, -1)
+        ckp_vecs = np.array(list(ckps_embed.values()))
+        print(doc_vec.shape, ckp_vecs.shape)
 
         # 2d list, inner dimension contains only 1 value representing cos sim between doc and ckp
-        doc_ckp_sims = cosine_similarity(ckp_vecs, [doc_vec])
+        doc_ckp_sims = cosine_similarity(ckp_vecs, doc_vec)
         # 2d list that calculates ckp's cos sim with all other ckps
         ckp2ckp_sims = cosine_similarity(ckp_vecs)
         np.fill_diagonal(ckp2ckp_sims, np.NaN)
