@@ -1,7 +1,6 @@
 from tika import parser
 import nltk
 import unidecode
-from collections import defaultdict
 import re
 import contractions
 from sklearn.metrics.pairwise import cosine_similarity
@@ -293,6 +292,8 @@ class EmbedRank:
         Return:
         ---------------
         selected_ckp_strings: 1d np array containing ckp string of the selected ckps
+
+        selected_ckp: 1d no array containing index of selected ckp
         '''
         # get the vector of doc and ckps
         doc_vec = doc_embed[1].reshape(1, -1)
@@ -341,4 +342,4 @@ class EmbedRank:
         # return the ckp string of selected ckps
         ckp_strings = np.array(list(ckps_embed.keys()))
         selected_ckp_strings = ckp_strings[selected_ckp]
-        return selected_ckp_strings
+        return selected_ckp_strings, selected_ckp
