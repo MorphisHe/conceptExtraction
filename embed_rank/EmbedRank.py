@@ -56,8 +56,10 @@ class EmbedRank:
     lemmatizer: nltk tool to lemmatize word tokens using POS tag
 
     parser: tika parser to extract text from files
+
+    model_path: path to load the model
     '''
-    def __init__(self, model_path):
+    def __init__(self, model_path=None):
         self.sent_tokenizer = nltk.tokenize.sent_tokenize
         self.punct_tokenizer = nltk.RegexpTokenizer(r"[^\W_]+|[^\W_\s]+")
         self.stop_words = stopwords
@@ -65,7 +67,8 @@ class EmbedRank:
         self.chucker = nltk.RegexpParser("""NP:{<JJ>*<NN.*>{0,3}}  # Adjectives (0) plus Nouns (1-3)""")
         self.lemmatizer = nltk.stem.WordNetLemmatizer()
         self.parser = parser
-        self.model = Doc2Vec.load(model_path)
+        if model_path != None:
+            self.model = Doc2Vec.load(model_path)
 
     def extract_information(self, pdf_path):
         '''
@@ -247,7 +250,7 @@ class EmbedRank:
 
         return lst_word_tokens
 
-    def embed_doc_ckps(self, doc_tag, ckps_list):
+    def embed_doc_ckps(self, doc_tag, ckps_list, infer_epochs=50, mode='infer_mode'):
         '''
         This method embeds doc and ckps to vectors
 
@@ -256,6 +259,12 @@ class EmbedRank:
         doc_tag: document tag
 
         ckps_list: 2d list -> [[ckp1, ckp2, ...], [ckp1, ...]]
+
+        infer_epochs: number of epochs to run model to infer the new document
+
+        mode: [infer_mode | dict_mode]
+              - infer_mode: to infer each ckps by treating them as documents
+              - dict_mode: infer each ckps by taking average of word matrix vectors
         
         Return:
         ---------------
@@ -265,17 +274,29 @@ class EmbedRank:
         '''
         # convert ckps_list to list of word tokens in 1d
         # at the same time embed each ckp
+        # TODO: will skipping some ckp_token cause bug?
         new_ckps_list = []
         ckps_embed = {}
-        for sent_token in ckps_list:
-            for ckp_token in sent_token:
-                for word_token in ckp_token.split():
-                    new_ckps_list.append(word_token)
-                ckps_embed[ckp_token] = self.model.infer_vector(ckp_token.split())
+        if mode == 'infer_mode':
+            
+            for sent_token in ckps_list:
+                for ckp_token in sent_token:
+                    new_ckps_list += ckp_token.split()
+                    ckps_embed[ckp_token] = self.model.infer_vector(ckp_token.split(), epochs=infer_epochs)
+        elif mode == 'dict_mode':
+            for sent_token in ckps_list:
+                for ckp_token in sent_token:
+                    ckp_token_embed = []
+                    for word_token in ckp_token.split():
+                        new_ckps_list.append(word_token)
+                        if word_token in self.model.wv: 
+                            ckp_token_embed.append(self.model.wv[word_token])
+                    if len(ckp_token_embed):
+                        ckps_embed[ckp_token] = np.mean(np.array(ckp_token_embed), axis=0)
 
         # embed document
-        doc_embed = (doc_tag, self.model.infer_vector(new_ckps_list))
-
+        doc_embed = (doc_tag, self.model.infer_vector(new_ckps_list, epochs=infer_epochs))
+        
         return doc_embed, ckps_embed
 
     
