@@ -191,7 +191,7 @@ class EmbedRank:
             - apply lemmatization on each word token using POS tag
             - parses the tagged wordswith nltk regex parser to construct phrases 
               in "adjective(0+)" plus "noun(1-3)" pattern
-            - remove duplicate phrases
+            - remove duplicate phrases and phrase that is substring of another phrase
             - remove empty sentences
 
         Parameter:
