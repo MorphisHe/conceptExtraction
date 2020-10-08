@@ -203,7 +203,7 @@ class EmbedRank:
         
         Return:
         ---------------
-        lst_word_tokens: 2d list with first dimension representing the sentence of text corpus
+        new_lst_word_tokens: 2d list with first dimension representing the sentence of text corpus
         and second dimension the candidate key phrases extracted from the sentence
         [["kp1", "kp2", ...], [], ....., []]
         '''
@@ -237,10 +237,26 @@ class EmbedRank:
                             if subtree.label() == "NP"]
                             for sent_token in lst_word_tokens]
 
-        # filter out empty sentence
-        lst_word_tokens = [sent_token for sent_token in lst_word_tokens if len(sent_token)]
+        # filter out phrases that is substring of another phrase
+        unique_phrase = list(set([phrase_token for sent_token in lst_word_tokens for phrase_token in sent_token]))
+        picked_phrases = []
+        new_lst_word_tokens = []
+        for sent_index in range(len(lst_word_tokens)):
+            sent_token = lst_word_tokens[sent_index]
+            new_sent_token = []
+            for phrase_token in sent_token:
+                if phrase_token not in picked_phrases:
+                    pass_flag = 1
+                    for unique_token in unique_phrase:
+                        if phrase_token != unique_token and phrase_token in unique_token:
+                            pass_flag = 0
+                            break
+                    if pass_flag:
+                        new_sent_token.append(phrase_token)
+            if len(new_sent_token):
+                new_lst_word_tokens.append(new_sent_token)
 
-        return lst_word_tokens
+        return new_lst_word_tokens
 
     def embed_doc_ckps(self, doc_tag, ckps_list, infer_epochs=50, mode='infer_mode'):
         '''
