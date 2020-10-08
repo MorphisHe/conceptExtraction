@@ -183,10 +183,10 @@ class EmbedRank:
         '''
         return 'n' if word_POS_tag.startswith("N") else 'a'
 
-    def preprocess(self, lst_word_tokens):
+    def preprocess(self, lst_word_tokens, remove_stopwords=True):
         '''
         This method does the following:
-            - remove stop words
+            - remove stop words: if remove_stopwords is True
             - remove words with <= 2 chars or > 21 chars
             - apply lemmatization on each word token using POS tag
             - parses the tagged wordswith nltk regex parser to construct phrases 
@@ -198,6 +198,8 @@ class EmbedRank:
         ---------------
         lst_word_tokens: 2d list where first dimension holds sentence level tokens
                          then each sentence token holds it's word tokens and POS_tag
+
+        remove_stopwords: (True | False) flag to remove stopwords
         
         Return:
         ---------------
@@ -206,8 +208,9 @@ class EmbedRank:
         [["kp1", "kp2", ...], [], ....., []]
         '''
         # remove stop words and words with <= 2 chars or > 21 chars
+        stopwords_temp = self.stop_words if remove_stopwords else []
         lst_word_tokens = [[word_token for word_token in sent_token
-                            if (word_token[0] not in self.stop_words and 
+                            if (word_token[0] not in stopwords_temp and 
                             (len(word_token[0])>2 and len(word_token[0])<=21))] 
                             for sent_token in lst_word_tokens]
 
@@ -234,17 +237,6 @@ class EmbedRank:
                             if subtree.label() == "NP"]
                             for sent_token in lst_word_tokens]
 
-        # remove duplicated phrases
-        seen_phrase = set()
-        for sent_index in range(len(lst_word_tokens)):
-            sent_token = lst_word_tokens[sent_index]
-            new_sent_token = []
-            for phrase_token in sent_token:
-                if phrase_token not in seen_phrase:
-                    seen_phrase.add(phrase_token)
-                    new_sent_token.append(phrase_token)
-            lst_word_tokens[sent_index] = new_sent_token
-        
         # filter out empty sentence
         lst_word_tokens = [sent_token for sent_token in lst_word_tokens if len(sent_token)]
 
