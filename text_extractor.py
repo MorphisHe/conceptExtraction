@@ -98,8 +98,8 @@ elif mode == "wiki_hand":
     print("\nTotal Time Taken for Extracting Wiki-hand: {}mins".format(round((time.time()-s)/60, 2)))
 elif mode == "wiki_2014":
     WIKI_PATH = "extracted_data/triplets_data/wikipedia_2014_09_27_examples.txt"
-    CKP_PATH = "extracted_data/test/wiki_2014/wiki2014_ckp.txt"
-    DOC2FILE_PATH = "extracted_data/test/wiki_2014/wiki2014_doc2file.txt"
+    CKP_PATH = "extracted_data/test/wiki_2014/wiki_2014_ckp.txt"
+    DOC2FILE_PATH = "extracted_data/test/wiki_2014/wiki_2014_doc2file.txt"
 
     s = time.time()
     gen_triplet_data(WIKI_PATH, CKP_PATH, DOC2FILE_PATH, er=er, max_triplet=max_triplet)
