@@ -3,7 +3,7 @@ This file converts a data file to 1 document per line format
 
 Run Guild: 
     - run in same dir as this file
-    - python3 doc_per_line.py [test|train] [corpus_path] [doc2file_path] [output_path]
+    - python3 doc_per_line.py [test|train] [optional (arxiv|wiki_hand|wiki_2014)] [corpus_path] [doc2file_path] [output_path]
 '''
 from smart_open import open
 import time
@@ -65,10 +65,19 @@ def convert(corpus_path, doc2file_path, output_path):
 
 
 # running the script
-test_or_train, ckp_path, doc2file_path, output_path = sys.argv[1:]
-CORPUS_PATH = f"../extracted_data/{test_or_train}/{ckp_path}"
-DOC2FILE_PATH = f"../extracted_data/{test_or_train}/{doc2file_path}"
-OUTPUT_PATH = f"../extracted_data/{test_or_train}/{output_path}"
+test_or_train = sys.argv[1]
+triplet_version, ckp_path, doc2file_path, output_path = 0,0,0,0
+CORPUS_PATH, DOC2FILE_PATH, OUTPUT_PATH = 0,0,0
+if test_or_train == "test":
+    triplet_version, ckp_path, doc2file_path, output_path = sys.argv[2:]
+    CORPUS_PATH = f"../extracted_data/{test_or_train}/{triplet_version}/{ckp_path}"
+    DOC2FILE_PATH = f"../extracted_data/{test_or_train}/{triplet_version}/{doc2file_path}"
+    OUTPUT_PATH = f"../extracted_data/{test_or_train}/{triplet_version}/{output_path}"
+elif test_or_train == "train":
+    ckp_path, doc2file_path, output_path = sys.argv[2:]
+    CORPUS_PATH = f"../extracted_data/{test_or_train}/{ckp_path}"
+    DOC2FILE_PATH = f"../extracted_data/{test_or_train}/{doc2file_path}"
+    OUTPUT_PATH = f"../extracted_data/{test_or_train}/{output_path}"
 
 if convert(CORPUS_PATH, DOC2FILE_PATH, OUTPUT_PATH):
     s = time.time()
