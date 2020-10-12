@@ -31,7 +31,7 @@ if train_or_test == "train":
         doc_id = doc_id[-1][0] # remove tuple and list
         words = words[-1] # remove tuple
 
-        inferred_vector = model.infer_vector(words, 4)
+        inferred_vector = model.infer_vector(words)
         sims = model.docvecs.most_similar([inferred_vector], topn=len(model.docvecs))
         rank = [docid for docid, sim in sims].index(doc_id)
         ranks.append(rank)
@@ -52,7 +52,7 @@ else:
         for tagged_doc in test_corpus:
             words,_ = enumerate(tagged_doc)
             words = words[-1] # remove tuple
-            cur_triplet.append(model.infer_vector(words, epochs=4))
+            cur_triplet.append(model.infer_vector(words))
             
             if len(cur_triplet) == 3:
                 a, p, n = cur_triplet
