@@ -1,7 +1,7 @@
 '''
 Run Guild:
     - run in same dir as this file
-    - python3 train.py [train_corpus_path] [test_corpus_path]
+    - python3 train.py [train_corpus_path] [test_corpus_path1] [test_corpus_path2]
 '''
 
 from gensim.models.doc2vec import Doc2Vec
@@ -50,21 +50,28 @@ def evaluate_triplet(model, test_corpus, print_out=False):
 
 
 # get path parameters
-train_corpus_path, test_corpus_path = sys.argv[1:]
+train_corpus_path, test_corpus_path1, test_corpus_path2 = sys.argv[1:]
 
 # create train corpus
 TRAIN_CORPUS_PATH = f"extracted_data/train/{train_corpus_path}"
 train_corpus = list(MyCorpus(TRAIN_CORPUS_PATH)) # each doc is a TaggedDocument object
 # create test corpus
-TEST_CORPUS_PATH = f"extracted_data/test/{test_corpus_path}"
-test_corpus = list(MyCorpus(TEST_CORPUS_PATH)) # each doc is a TaggedDocument object
+TEST_CORPUS_PATH = f"extracted_data/test/wiki_hand/{test_corpus_path1}"
+wiki_hand_test_corpus = list(MyCorpus(TEST_CORPUS_PATH)) # each doc is a TaggedDocument object
+
+TEST_CORPUS_PATH = f"extracted_data/test/wiki_2014/{test_corpus_path2}"
+wiki_2014_test_corpus = list(MyCorpus(TEST_CORPUS_PATH)) # each doc is a TaggedDocument object
 
 
 
 
 # search for the best hyperparameters
+'''
 parameters = {'vector_size':[20, 50, 100, 150, 200, 250, 300], 'min_count':[3, 5, 7, 8, 9, 10],
               'epochs':[10, 20, 30, 40], 'window':[2, 3, 4, 5, 10], 'negative':[5, 7, 9, 11]}
+'''
+parameters = {'vector_size':[300, 400, 500], 'min_count':[7, 8, 10],
+              'epochs':[30, 40, 50], 'window':[2, 3, 4], 'negative':[7, 9, 11]}
 num_cores = cpu_count()
 
 s = time.time()
@@ -104,8 +111,12 @@ for cur_epochs in parameters["epochs"]:
                     print("     - Negative:", cur_negative)
                     print("     - Min_Count:", cur_mc, "\n\n")
                     model.train(train_corpus, total_examples=model.corpus_count, epochs=cur_epochs)
-                    accuracy = evaluate_triplet(model, test_corpus)
+                    wiki_hand_accuracy = evaluate_triplet(model, wiki_hand_test_corpus)
+                    wiki_2014_accuracy = evaluate_triplet(model, wiki_2014_test_corpus)
+                    accuracy = (wiki_2014_accuracy+wiki_hand_accuracy)/2
                     print("\n**************************")
+                    print(f"Wiki_hand Accuracy: {wiki_hand_accuracy}%")
+                    print(f"Wiki_2014 Accuracy: {wiki_2014_accuracy}%")
                     print(f"Accuracy: {accuracy}%")
                     print("**************************\n")
                     tunning_log.append((str(model),f"Epoch: {cur_epochs}",f"Accuracy:{accuracy}"))
@@ -117,6 +128,8 @@ for cur_epochs in parameters["epochs"]:
                                         "epochs":cur_epochs, "min_count":cur_mc, 'negative':cur_negative}
                         best_model = model
                     print("===============================================\n")
+
+
 
 
 print("\n\n\n")
