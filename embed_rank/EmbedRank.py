@@ -286,7 +286,6 @@ class EmbedRank:
         new_ckps_list = []
         ckps_embed = {}
         if mode == 'infer_mode':
-            
             for sent_token in ckps_list:
                 for ckp_token in sent_token:
                     new_ckps_list += ckp_token.split()
@@ -308,7 +307,7 @@ class EmbedRank:
         return doc_embed, ckps_embed
 
     
-    def mmr(self, doc_embed, ckps_embed, beta=0.55, top_n=10):
+    def mmr(self, doc_embed, ckps_embed, beta=0.7, top_n=10):
         '''
         This method applied mmr to pick the top_n ckp with controlled similarity between ckps
 
